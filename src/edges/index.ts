@@ -1,10 +1,23 @@
-import type { Edge, EdgeTypes } from '@xyflow/react';
+import type { Edge, EdgeTypes } from "@xyflow/react";
+import { tasks } from "../data";
 
-export const initialEdges: Edge[] = [
-  { id: 'a->c', source: 'a', target: 'c', animated: true },
-  { id: 'b->d', source: 'b', target: 'd' },
-  { id: 'c->d', source: 'c', target: 'd', animated: true },
-];
+const generateEdges = (): Edge[] => {
+  const edges = [];
+
+  for (const task of tasks) {
+    for (const dependency of task.dependencies) {
+      edges.push({
+        id: `${dependency}->${task.id}`,
+        source: dependency,
+        target: task.id,
+      });
+    }
+  }
+
+  return edges;
+};
+
+export const initialEdges: Edge[] = generateEdges();
 
 export const edgeTypes = {
   // Add your custom edge types here!
