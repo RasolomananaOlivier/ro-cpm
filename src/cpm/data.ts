@@ -44,7 +44,7 @@ function topologicalSortTasks(tasks: BasicTask[]): BasicTask[] {
   });
   tasks.forEach((task) => {
     // For each dependency of a task, increase its indegree.
-    task.dependencies.forEach((dep) => {
+    task.dependencies.forEach(() => {
       indegree[task.id] = (indegree[task.id] || 0) + 1;
     });
   });
