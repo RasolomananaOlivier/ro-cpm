@@ -10,3 +10,17 @@ body,
   height: 100%;
   margin: 0;
 }
+
+/* Circle Node */
+
+.node-circle {
+  border-radius: 50%;
+  height: 100px;
+  width: 100px;
+  font-family: monospace;
+  border: 1px solid black;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

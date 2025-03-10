@@ -1,23 +1,19 @@
-import { useCallback } from "react";
-import {
-  ReactFlow,
-  Background,
-  Controls,
-  MiniMap,
-  addEdge,
-  useNodesState,
-  useEdgesState,
-  type OnConnect,
-  Node,
-  Edge,
-} from "@xyflow/react";
+import { useEffect, useState } from "react";
+import { Edge } from "@xyflow/react";
 import dagre from "@dagrejs/dagre";
 
 import "@xyflow/react/dist/style.css";
 
-import { initialNodes, nodeTypes } from "./nodes";
-import { initialEdges, edgeTypes } from "./edges";
 import { AppNode } from "./nodes/types";
+import { computeCPM } from "./cpm/utils";
+import {
+  BasicTask,
+  basicTasks,
+  buildEventsFromTasks,
+  generateCPMNetworkFromBasicTasks,
+} from "./cpm/data";
+import Flow from "./cpm/Flow";
+import { Sidebar } from "./cpm/Sidebar";
 
 const dagreGraph = new dagre.graphlib.Graph().setDefaultEdgeLabel(() => ({}));
 
@@ -62,45 +58,71 @@ const getLayoutedElements = (
   return { nodes: newNodes, edges };
 };
 
-const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(
-  initialNodes,
-  initialEdges
-);
-
-const nodeColor = (node: Node) => {
-  switch (node.type) {
-    case "input":
-      return "#6ede87";
-    case "output":
-      return "#6865A5";
-    default:
-      return "#ff0072";
-  }
-};
-
 export default function App() {
-  // @ts-expect-error 565
-  const [nodes, , onNodesChange] = useNodesState(layoutedNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(layoutedEdges);
-  const onConnect: OnConnect = useCallback(
-    (connection) => setEdges((edges) => addEdge(connection, edges)),
-    [setEdges]
-  );
+  const [bt, setbt] = useState<BasicTask[]>(basicTasks);
+
+  const [finalEdges, setFinalEdges] = useState<Edge[]>([]);
+  const [finalNodes, setFinalNodes] = useState<AppNode[]>([]);
+
+  useEffect(() => {
+    const { tasks } = generateCPMNetworkFromBasicTasks(bt);
+    const events = buildEventsFromTasks(tasks);
+
+    const { events: computedEvents, tasks: ComputedTasks } = computeCPM(
+      events,
+      tasks
+    );
+
+    const initialNodes = Object.values(computedEvents).map((event) => ({
+      id: event.id,
+      data: {
+        label: `Event ${event.id}\nES: ${event.earliestTime}\nLS: ${event.latestTime}`,
+      },
+      position: { x: Math.random() * 400, y: Math.random() * 400 }, // replace with a layout algorithm
+    }));
+
+    const initialEdges = ComputedTasks.map((task) => ({
+      id: task.id,
+      source: task.startEvent,
+      target: task.endEvent,
+      label: `${task.label} (${task.duration})`,
+      animated: task.slack === 0, // for visualizing the critical path
+    }));
+
+    const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(
+      initialNodes,
+      initialEdges
+    );
+
+    setFinalEdges(layoutedEdges);
+    // @ts-expect-error boof
+    setFinalNodes(layoutedNodes);
+  }, [bt, setbt, setFinalEdges, setFinalNodes]);
+
+  // Handlers for adding, editing, and deleting tasks.
+  const handleAddTask = (task: BasicTask) => {
+    setbt([...bt, task]);
+  };
+
+  const handleEditTask = (updatedTask: BasicTask) => {
+    setbt(bt.map((task) => (task.id === updatedTask.id ? updatedTask : task)));
+  };
+
+  const handleDeleteTask = (id: string) => {
+    setbt(bt.filter((task) => task.id !== id));
+  };
 
   return (
-    <ReactFlow
-      nodes={nodes}
-      nodeTypes={nodeTypes}
-      onNodesChange={onNodesChange}
-      edges={edges}
-      edgeTypes={edgeTypes}
-      onEdgesChange={onEdgesChange}
-      onConnect={onConnect}
-      fitView
-    >
-      <Background />
-      <MiniMap nodeColor={nodeColor} nodeStrokeWidth={3} zoomable pannable />
-      <Controls />
-    </ReactFlow>
+    <div style={{ display: "flex", height: "100vh" }}>
+      <Sidebar
+        tasks={bt}
+        onAddTask={handleAddTask}
+        onEditTask={handleEditTask}
+        onDeleteTask={handleDeleteTask}
+      />
+      <div style={{ flexGrow: 1 }}>
+        <Flow initialEdges={finalEdges} initialsNodes={finalNodes} />
+      </div>
+    </div>
   );
 }
