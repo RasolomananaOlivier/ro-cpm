@@ -78,6 +78,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <h3>{isEditing ? "Edit Task" : "Add Task"}</h3>
       <form onSubmit={handleSubmit}>
         <div>
+          <label>Id:</label>
+          <input
+            type="text"
+            value={formTask.id}
+            onChange={(e) => setFormTask({ ...formTask, id: e.target.value })}
+            required
+          />
+        </div>
+        <div>
           <label>Label:</label>
           <input
             type="text"
