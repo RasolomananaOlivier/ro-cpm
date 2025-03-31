@@ -9,13 +9,19 @@ import {
   useEdgesState,
   type OnConnect,
   Edge,
+  NodeTypes,
 } from "@xyflow/react";
 
 import "@xyflow/react/dist/style.css";
 
 import { AppNode } from "../nodes/types";
+// import { CustomNode } from "../nodes/CPMNode";
 import { nodeTypes } from "../nodes";
-import { edgeTypes } from "../edges";
+// import { edgeTypes } from "../edges";
+
+// const nodeTypes = {
+//   custom: CustomNode,
+// } satisfies NodeTypes;
 
 export default function Flow({
   initialsNodes,
@@ -42,7 +48,7 @@ export default function Flow({
       nodeTypes={nodeTypes}
       onNodesChange={onNodesChange}
       edges={edges}
-      edgeTypes={edgeTypes}
+      // edgeTypes={edgeTypes}
       onEdgesChange={onEdgesChange}
       onConnect={onConnect}
       fitView

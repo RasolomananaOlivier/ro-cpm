@@ -5,7 +5,9 @@ import { events, tasks } from "./data";
 export const initialNodes: AppNode[] = Object.values(events).map((event) => ({
   id: event.id,
   data: {
-    label: `Event ${event.id}\nES: ${event.earliestTime}\nLS: ${event.latestTime}`,
+    label: "",
+    earliestStart: event.earliestTime,
+    latestStart: event.latestTime,
   },
   position: { x: Math.random() * 400, y: Math.random() * 400 }, // replace with a layout algorithm
 }));

@@ -10,6 +10,7 @@ export interface BasicTask {
 export interface Task extends BasicTask {
   startEvent: string;
   endEvent: string;
+  predecessors: string[];
   slack?: number;
 }
 
@@ -107,18 +108,18 @@ export function generateCPMNetworkFromBasicTasks(basicTasks: BasicTask[]): {
   // Process tasks in topological order.
   for (const t of sortedTasks) {
     let startEvent: string;
+    let predecessors: string[] = [];
+
     if (t.dependencies.length === 0) {
-      // No dependencies: use global start.
       startEvent = globalStart;
     } else if (t.dependencies.length === 1) {
-      // Single dependency: use that dependency's end event.
       const dep = t.dependencies[0];
       startEvent = endEventMapping[dep];
+      predecessors = [dep]; // Track predecessor
       if (!startEvent) {
         throw new Error(`Dependency ${dep} not processed for task ${t.id}`);
       }
     } else {
-      // Multiple dependencies.
       const depEvents = t.dependencies.map((dep) => {
         const ev = endEventMapping[dep];
         if (!ev) {
@@ -126,19 +127,22 @@ export function generateCPMNetworkFromBasicTasks(basicTasks: BasicTask[]): {
         }
         return ev;
       });
-      // If all dependency end events are the same, use it.
+
       const allEqual = depEvents.every((ev) => ev === depEvents[0]);
       if (allEqual) {
         startEvent = depEvents[0];
+        predecessors = t.dependencies; // Track all dependencies
       } else {
-        // Create a merge event.
+        // Merge event required
         const key = depEvents.slice().sort().join("_");
         if (mergeMapping[key]) {
           startEvent = mergeMapping[key];
         } else {
           startEvent = "M" + mergeCounter++;
           mergeMapping[key] = startEvent;
-          // For each distinct dependency event, add a dummy task from that event to the merge event.
+          predecessors = t.dependencies;
+
+          // Create dummy merge tasks
           const distinctDepEvents = Array.from(new Set(depEvents));
           for (const ev of distinctDepEvents) {
             dummyTasks.push({
@@ -148,18 +152,23 @@ export function generateCPMNetworkFromBasicTasks(basicTasks: BasicTask[]): {
               dependencies: [],
               startEvent: ev,
               endEvent: startEvent,
+              predecessors: [
+                endEventMapping[
+                  t.dependencies.find((d) => endEventMapping[d] === ev) || ""
+                ],
+              ], // Tracking the right predecessor
             });
           }
         }
       }
     }
 
-    // Each task gets its own unique end event.
     const endEvent = "e_" + t.id;
     const newTask: Task = {
       ...t,
       startEvent,
       endEvent,
+      predecessors,
     };
     generatedTasks.push(newTask);
     endEventMapping[t.id] = endEvent;
@@ -184,6 +193,7 @@ export function generateCPMNetworkFromBasicTasks(basicTasks: BasicTask[]): {
         dependencies: [],
         startEvent: t.endEvent,
         endEvent: globalFinish,
+        predecessors: [t.id], // ✅ Ensure predecessors are included
       });
     }
   }

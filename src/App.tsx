@@ -68,25 +68,35 @@ export default function App() {
     const { tasks } = generateCPMNetworkFromBasicTasks(bt);
     const events = buildEventsFromTasks(tasks);
 
-    const { events: computedEvents, tasks: ComputedTasks } = computeCPM(
+    const { events: computedEvents, tasks: computedTasks } = computeCPM(
       events,
       tasks
     );
 
-    const initialNodes = Object.values(computedEvents).map((event) => ({
-      id: event.id,
-      data: {
-        label: `Event ${event.id}\nES: ${event.earliestTime}\nLS: ${event.latestTime}`,
-      },
-      position: { x: Math.random() * 400, y: Math.random() * 400 }, // replace with a layout algorithm
-    }));
+    const initialNodes: AppNode[] = Object.values(computedEvents).map(
+      (event) => ({
+        id: event.id,
+        type: "CPNNode",
+        data: {
+          label: event.id,
+          earliestStart: event.earliestTime,
+          latestStart: event.latestTime,
+          duration: 5,
+          successors: event.outgoing,
+          predecessors: event.incoming,
+        },
+        position: { x: Math.random() * 400, y: Math.random() * 400 }, // replace with a layout algorithm
+      })
+    );
 
-    const initialEdges = ComputedTasks.map((task) => ({
+    const initialEdges: Edge[] = computedTasks.map((task) => ({
       id: task.id,
       source: task.startEvent,
+      sourceHandle: task.id, // Matches the source node's handle rendered by successors
       target: task.endEvent,
+      targetHandle: task.id, // Matches the target node's handle rendered by predecessors
       label: `${task.label} (${task.duration})`,
-      animated: task.slack === 0, // for visualizing the critical path
+      animated: task.slack === 0,
     }));
 
     const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(

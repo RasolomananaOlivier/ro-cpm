@@ -1,4 +1,5 @@
 import { useState } from "react";
+import Select from "react-select"; // Import React Select
 import { BasicTask } from "./data";
 
 interface SidebarProps {
@@ -7,6 +8,7 @@ interface SidebarProps {
   onEditTask: (task: BasicTask) => void;
   onDeleteTask: (id: string) => void;
 }
+
 export const Sidebar: React.FC<SidebarProps> = ({
   tasks,
   onAddTask,
@@ -26,7 +28,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
     if (isEditing) {
       onEditTask(formTask);
     } else {
-      // If no id provided, generate one (for simplicity using Date.now())
       const newTask = { ...formTask, id: formTask.id || String(Date.now()) };
       onAddTask(newTask);
     }
@@ -37,6 +38,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const handleEditClick = (task: BasicTask) => {
     setFormTask(task);
     setIsEditing(true);
+  };
+
+  const handleDependenciesChange = (selectedOptions: any) => {
+    const selectedIds = selectedOptions.map((option: any) => option.value);
+    setFormTask({ ...formTask, dependencies: selectedIds });
   };
 
   return (
@@ -109,19 +115,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
           />
         </div>
         <div>
-          <label>Dependencies (comma separated IDs):</label>
-          <input
-            type="text"
-            value={formTask.dependencies.join(",")}
-            onChange={(e) =>
-              setFormTask({
-                ...formTask,
-                dependencies: e.target.value
-                  .split(",")
-                  .map((s) => s.trim())
-                  .filter((s) => s),
-              })
-            }
+          <label>Dependencies:</label>
+          <Select
+            isMulti
+            options={tasks
+              .filter((t) => t.id !== formTask.id) // Exclude the current task
+              .map((t) => ({ value: t.id, label: t.label }))}
+            value={tasks
+              .filter((t) => formTask.dependencies.includes(t.id))
+              .map((t) => ({ value: t.id, label: t.label }))}
+            onChange={handleDependenciesChange}
           />
         </div>
         <button type="submit">{isEditing ? "Update" : "Add"}</button>
