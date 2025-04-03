@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@dagrejs/dagre": "^1.1.4",
-    "@xyflow/react": "^12.3.6",
+    "@xyflow/react": "^12.5.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-select": "^5.10.1"
