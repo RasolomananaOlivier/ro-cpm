@@ -28,7 +28,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     if (isEditing) {
       onEditTask(formTask);
     } else {
-      const newTask = { ...formTask, id: formTask.id || String(Date.now()) };
+      const newTask = { ...formTask, id: String(Date.now()) };
       onAddTask(newTask);
     }
     setFormTask({ id: "", label: "", duration: 0, dependencies: [] });
@@ -54,7 +54,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         overflowY: "auto",
       }}
     >
-      <h2>Tasks</h2>
+      <h2>Tâches</h2>
       <ul style={{ listStyle: "none", padding: 0 }}>
         {tasks.map((task) => (
           <li
@@ -63,39 +63,41 @@ export const Sidebar: React.FC<SidebarProps> = ({
               marginBottom: "0.5rem",
               padding: "0.5rem",
               border: "1px solid #ddd",
+              borderRadius: "8px",
             }}
           >
             <div>
-              <strong>{task.label}</strong> (duration : {task.duration})
+              <strong>{task.label}</strong> (durée : {task.duration})
             </div>
-            <div>ID: {task.id}</div>
             <div>
-              Dependencies:{" "}
+              Dépendances:{" "}
               {task.dependencies.length > 0
-                ? task.dependencies.join(", ")
-                : "None"}
+                ? getDependeciesLabel(tasks, task.dependencies)
+                : "Début"}
             </div>
-            <button onClick={() => handleEditClick(task)}>Edit</button>{" "}
-            <button onClick={() => onDeleteTask(task.id)}>Delete</button>
+            <button
+              onClick={() => handleEditClick(task)}
+              className="button button-primary"
+            >
+              Edit
+            </button>{" "}
+            <button
+              onClick={() => onDeleteTask(task.id)}
+              className="button button-danger"
+            >
+              Delete
+            </button>
           </li>
         ))}
       </ul>
       <hr />
-      <h3>{isEditing ? "Edit Task" : "Add Task"}</h3>
+      <h3>{isEditing ? "Modifier la tâche" : "Ajouter une tâche"}</h3>
       <form onSubmit={handleSubmit}>
-        <div>
-          <label>Id:</label>
+        <div className="input-container">
+          <label>Nom de la tâche</label>
           <input
             type="text"
-            value={formTask.id}
-            onChange={(e) => setFormTask({ ...formTask, id: e.target.value })}
-            required
-          />
-        </div>
-        <div>
-          <label>Label:</label>
-          <input
-            type="text"
+            className="input"
             value={formTask.label}
             onChange={(e) =>
               setFormTask({ ...formTask, label: e.target.value })
@@ -103,10 +105,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
             required
           />
         </div>
-        <div>
-          <label>Duration:</label>
+        <div className="input-container">
+          <label>Durée de la tâche</label>
           <input
             type="number"
+            className="input"
             value={formTask.duration}
             onChange={(e) =>
               setFormTask({ ...formTask, duration: Number(e.target.value) })
@@ -114,8 +117,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
             required
           />
         </div>
-        <div>
-          <label>Dependencies:</label>
+        <div className="input-container">
+          <label>Dépendances</label>
           <Select
             isMulti
             options={tasks
@@ -127,8 +130,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
             onChange={handleDependenciesChange}
           />
         </div>
-        <button type="submit">{isEditing ? "Update" : "Add"}</button>
+        <button type="submit" className="button button-primary">
+          {isEditing ? "Update" : "Add"}
+        </button>
       </form>
     </div>
   );
+};
+
+const getDependeciesLabel = (tasks: BasicTask[], dependencies: string[]) => {
+  return tasks
+    .filter((t) => dependencies.includes(t.id))
+    .map((t) => t.label)
+    .join(", ");
 };

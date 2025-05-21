@@ -58,14 +58,16 @@ const getLayoutedElements = (
   return { nodes: newNodes, edges };
 };
 
-export default function App() {
-  const [bt, setbt] = useState<BasicTask[]>(basicTasks);
-
-  const [finalEdges, setFinalEdges] = useState<Edge[]>([]);
-  const [finalNodes, setFinalNodes] = useState<AppNode[]>([]);
-
-  useEffect(() => {
-    const { tasks } = generateCPMNetworkFromBasicTasks(bt);
+type ProcessCPMType =
+  | {
+      nodes: AppNode[];
+      edges: Edge[];
+      tasks: BasicTask[];
+    }
+  | undefined;
+const processCPM = (tasksToProcess: BasicTask[]): ProcessCPMType => {
+  try {
+    const { tasks } = generateCPMNetworkFromBasicTasks(tasksToProcess);
     const events = buildEventsFromTasks(tasks);
 
     const { events: computedEvents, tasks: computedTasks } = computeCPM(
@@ -104,22 +106,80 @@ export default function App() {
       initialEdges
     );
 
-    setFinalEdges(layoutedEdges);
-    // @ts-expect-error boof
-    setFinalNodes(layoutedNodes);
-  }, [bt, setbt, setFinalEdges, setFinalNodes]);
+    return {
+      edges: layoutedEdges,
+      // @ts-expect-error
+      nodes: layoutedNodes,
+      tasks: computedTasks,
+    };
+  } catch (error) {
+    alert(error);
+  }
+};
+
+export default function App() {
+  const [bt, setbt] = useState<BasicTask[]>(basicTasks);
+
+  const [finalEdges, setFinalEdges] = useState<Edge[]>([]);
+  const [finalNodes, setFinalNodes] = useState<AppNode[]>([]);
+
+  useEffect(() => {
+    const processedTasks = processCPM(bt);
+    if (processedTasks) {
+      setFinalEdges(processedTasks.edges);
+      setFinalNodes(processedTasks.nodes);
+    }
+  }, []);
 
   // Handlers for adding, editing, and deleting tasks.
   const handleAddTask = (task: BasicTask) => {
-    setbt([...bt, task]);
+    const newTasks = [...bt, task];
+
+    const processedTasks = processCPM(newTasks);
+
+    if (processedTasks) {
+      setbt(newTasks);
+      setFinalEdges(processedTasks.edges);
+      setFinalNodes(processedTasks.nodes);
+    }
   };
 
   const handleEditTask = (updatedTask: BasicTask) => {
-    setbt(bt.map((task) => (task.id === updatedTask.id ? updatedTask : task)));
+    const tasksUpdated = bt.map((task) =>
+      task.id === updatedTask.id ? updatedTask : task
+    );
+
+    const processedTasks = processCPM(tasksUpdated);
+
+    if (processedTasks) {
+      setbt(tasksUpdated);
+      setFinalEdges(processedTasks.edges);
+      setFinalNodes(processedTasks.nodes);
+    }
   };
 
   const handleDeleteTask = (id: string) => {
-    setbt(bt.filter((task) => task.id !== id));
+    // Remove deps
+    const removedDeps = bt.map((task) => {
+      if (task.dependencies.includes(id)) {
+        return {
+          ...task,
+          dependencies: task.dependencies.filter((dep) => dep !== id),
+        };
+      }
+      return task;
+    });
+
+    // Remove the task
+    const updated = removedDeps.filter((task) => task.id !== id);
+
+    const processedTasks = processCPM(updated);
+
+    if (processedTasks) {
+      setbt(updated);
+      setFinalEdges(processedTasks.edges);
+      setFinalNodes(processedTasks.nodes);
+    }
   };
 
   return (

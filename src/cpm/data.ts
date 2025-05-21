@@ -73,7 +73,7 @@ function topologicalSortTasks(tasks: BasicTask[]): BasicTask[] {
   }
 
   if (sorted.length !== tasks.length) {
-    throw new Error("Cycle detected in tasks.");
+    throw new Error("Cycle détectée");
   }
 
   return sorted;
