@@ -79,13 +79,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
               onClick={() => handleEditClick(task)}
               className="button button-primary"
             >
-              Edit
+              Modifier
             </button>{" "}
             <button
               onClick={() => onDeleteTask(task.id)}
               className="button button-danger"
             >
-              Delete
+              Supprimer
             </button>
           </li>
         ))}
@@ -131,7 +131,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           />
         </div>
         <button type="submit" className="button button-primary">
-          {isEditing ? "Update" : "Add"}
+          {isEditing ? "Modifier" : "Ajouter"}
         </button>
       </form>
     </div>
