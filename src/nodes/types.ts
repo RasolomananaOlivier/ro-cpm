@@ -1,5 +1,4 @@
 import type { Node, BuiltInNode } from "@xyflow/react";
-import { Task } from "../data";
 
 export type AppNode = BuiltInNode | CPMNode;
 

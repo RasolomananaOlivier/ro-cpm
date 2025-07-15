@@ -1,4 +1,4 @@
-import { Handle, Node, Position, type NodeProps } from "@xyflow/react";
+import { Handle, Position, type NodeProps } from "@xyflow/react";
 
 import { type CPMNode } from "./types";
 export function CPMNode({ data }: NodeProps<CPMNode>) {

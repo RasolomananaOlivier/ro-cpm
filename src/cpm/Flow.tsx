@@ -9,7 +9,6 @@ import {
   useEdgesState,
   type OnConnect,
   Edge,
-  NodeTypes,
 } from "@xyflow/react";
 
 import "@xyflow/react/dist/style.css";
