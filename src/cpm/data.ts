@@ -24,13 +24,19 @@ export type Event = {
 
 // Example usage:
 export const basicTasks: BasicTask[] = [
-  { id: "A", label: "Task A", duration: 2, dependencies: [] },
-  { id: "B", label: "Task B", duration: 8, dependencies: [] },
-  { id: "C", label: "Task C", duration: 5, dependencies: ["A"] },
-  { id: "D", label: "Task D", duration: 2, dependencies: ["B"] },
-  { id: "E", label: "Task E", duration: 6, dependencies: ["B"] },
-  { id: "F", label: "Task F", duration: 5, dependencies: ["E"] },
-  { id: "G", label: "Task G", duration: 3, dependencies: ["A", "D"] },
+  { id: "A", label: "A", duration: 8, dependencies: [] },
+  { id: "B", label: "B", duration: 12, dependencies: [] },
+  { id: "C", label: "C", duration: 8, dependencies: ["A"] },
+  { id: "D", label: "D", duration: 4, dependencies: ["A"] },
+  { id: "E", label: "E", duration: 16, dependencies: ["A"] },
+  { id: "F", label: "F", duration: 4, dependencies: ["B"] },
+  { id: "G", label: "G", duration: 20, dependencies: ["C", "D"] },
+  { id: "H", label: "H", duration: 16, dependencies: ["E", "F", "G"] },
+
+  { id: "I", label: "I", duration: 12, dependencies: ["C", "D"] },
+  { id: "J", label: "J", duration: 20, dependencies: ["E", "F", "G"] },
+  { id: "K", label: "K", duration: 20, dependencies: ["H", "I", "J"] },
+  { id: "L", label: "L", duration: 24, dependencies: ["H", "I", "J"] },
 ];
 
 /**
